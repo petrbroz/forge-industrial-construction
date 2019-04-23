@@ -9,24 +9,42 @@ function idToUrn(id) {
     return Buffer.from(id).toString('base64').replace(/\=/g, '');
 }
 
-router.get('/models', async function(req, res, next) {
+router.get('/facilities', async function(req, res) {
     try {
         const objects = await data.objects(process.env.FORGE_BUCKET);
-        const models = new Map();
+        const facilities = new Set();
         for (const object of objects) {
-            const match = object.objectKey.match(/^Area\.(\d+)\.(\w+)\.NWD$/);
+            const match = object.objectKey.match(/^(\w+)\-(\d+)\-(\w+)\.nwd$/);
             if (match) {
-                const [_, area, type] = match;
-                if (!models.has(area)) {
-                    models.set(area, { area, datasets: {} });
-                }
-                const model = models.get(area);
-                model.datasets[type] = idToUrn(object.objectId);
+                const facilityKey = match[1].toLowerCase();
+                facilities.add(facilityKey);
             }
         }
-        res.json(Array.from(models.values()));
+        res.json(Array.from(facilities.values()));
     } catch(err) {
-        next(err);
+        res.status(500).send(err);
+    }
+});
+
+router.get('/facilities/:facility', async function(req, res) {
+    try {
+        const objects = await data.objects(process.env.FORGE_BUCKET);
+        const areas = {};
+        for (const object of objects) {
+            const match = object.objectKey.match(/^(\w+)\-(\d+)\-(\w+)\.nwd$/);
+            if (match) {
+                const facilityKey = match[1].toLowerCase();
+                if (facilityKey === req.params.facility) {
+                    const areaKey = match[2];
+                    const typeKey = match[3].toLowerCase();
+                    const area = areas[areaKey] = areas[areaKey] || {};
+                    area[typeKey] = idToUrn(object.objectId);
+                }
+            }
+        }
+        res.json(areas);
+    } catch(err) {
+        res.status(500).send(err);
     }
 });
 

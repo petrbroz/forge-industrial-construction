@@ -8,30 +8,43 @@ async function initViewer() {
     await Autodesk.Viewing.Utilities.Initialize(document.getElementById('viewer'), getAccessToken);
 }
 
-async function initSidebar() {
-    const resp = await fetch('/api/data/models');
-    if (resp.status !== 200) {
-        const text = await resp.text();
-        throw new Error('Could not load models: ' + text);
-    }
-    const models = await resp.json();
-    const $models = $('#models');
-    $models.empty();
-    for (const model of models) {
-        $models.append(`<h5>Area ${model.area}</h5>`);
-        const datasets = Object.getOwnPropertyNames(model.datasets);
-        for (const dataset of datasets) {
-            const id = `area-${model.area}-${dataset.toLowerCase()}`;
-            const $checkbox = $(`
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="${model.datasets[dataset]}" id="${id}" />
-                    <label class="form-check-label" for="${id}">${dataset}</label>
-                </div>
-            `);
-            $models.append($checkbox);
+async function initSidebar(facility) {
+    await initModelsTable(facility);
+}
+
+async function initModelsTable(facility) {
+    const resp = await fetch('/api/data/facilities/' + facility);
+    const areas = await resp.json();
+    const types = new Set();
+    for (const areaKey in areas) {
+        for (const prop of Object.getOwnPropertyNames(areas[areaKey])) {
+            types.add(prop);
         }
     }
 
+    // Create table header
+    const $table = $('#models');
+    $table.empty();
+    const $header = $table.append(`<th></th>`);
+    for (const areaKey in areas) {
+        $header.append(`<td class="model-area-select">${areaKey}</td>`);
+    }
+
+    // Create table content
+    for (const type of types.values()) {
+        const $row = $table.append(`<tr></tr>`);
+        $row.append(`<td class="model-type-select">${type}</td>`);
+        for (const areaKey in areas) {
+            const area = areas[areaKey];
+            if (area[type]) {
+                $row.append(`<td><input type="checkbox" value="${area[type]}" data-area="${areaKey}" data-type="${type}" /></td>`);
+            } else {
+                $row.append(`<td></td>`);
+            }
+        }
+    }
+
+    // Setup event handlers
     $('#models input').on('change', function() {
         const urn = this.value;
         const models = NOP_VIEWER.getVisibleModels();
@@ -51,9 +64,10 @@ async function initSidebar() {
             NOP_VIEWER.impl.unloadModel(model);
         }
     });
+    // TODO: event handlers for group-selecting areas or types
 }
 
 $(function() {
     initViewer();
-    initSidebar();
+    initSidebar('montreal');
 });
