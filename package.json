@@ -1,0 +1,20 @@
+{
+  "name": "forge-industrial-construction",
+  "version": "0.0.0",
+  "description": "Autodesk Forge application demonstrating possible usage in industrial construction.",
+  "scripts": {
+  },
+  "keywords": [
+    "autodesk",
+    "forge",
+    "industrial",
+    "construction"
+  ],
+  "author": "Petr Broz <petr.broz@autodesk.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.4",
+    "forge-nodejs-utils": "^0.4.0",
+    "pug": "^2.0.3"
+  }
+}
