@@ -1,8 +1,9 @@
 {
   "name": "forge-industrial-construction",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Autodesk Forge application demonstrating possible usage in industrial construction.",
   "scripts": {
+    "start": "node server.js"
   },
   "keywords": [
     "autodesk",
