@@ -3,6 +3,7 @@ head
   include partials/head.pug
   link(rel='stylesheet' href='https://developer.api.autodesk.com/modelderivative/v2/viewers/6.*/style.css')
   link(rel='stylesheet' href='/stylesheets/facility.css')
+  link(rel='stylesheet' href='/scripts/extensions/issues.css')
   script(src='https://developer.api.autodesk.com/modelderivative/v2/viewers/6.*/viewer3D.js')
   script(src='https://petrbroz.github.io/forge-viewer-utils/master/Utilities.js')
 #container
@@ -17,4 +18,5 @@ head
   #sidebar
     table#models.table
 include partials/footer.pug
+script(src='/scripts/extensions/issues.js')
 script(src='/scripts/facility.js')

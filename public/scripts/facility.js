@@ -6,6 +6,7 @@ async function initViewer() {
         callback(token.access_token, token.expires_in);
     }
     await Autodesk.Viewing.Utilities.Initialize(document.getElementById('viewer'), getAccessToken);
+    NOP_VIEWER.loadExtension('IssuesExtension');
 }
 
 async function initSidebar(facility) {
