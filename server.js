@@ -17,7 +17,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/data', require('./routes/data'));
 app.use('/facility/:name', function(req, res) {
-    res.render('facility', { facility: req.params.name });
+    let name = req.params.name;
+    name = name.charAt(0).toUpperCase() + name.slice(1);
+    res.render('facility', { facility: name });
 });
 app.use('/', function(req, res) {
     res.render('index', { GOOGLE_MAPS_API_KEY });

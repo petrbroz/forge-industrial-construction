@@ -24,6 +24,18 @@
     font-size: 1.5em;
 }
 
+#location {
+    grid-row: 1 / 2;
+    grid-column: 2 / 3;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}
+
+#location > * {
+    margin: 0 1em 0 0;
+}
+
 #viewer {
     grid-row: 2 / 3;
     grid-column: 1 / 2;
