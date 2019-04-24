@@ -1,12 +1,27 @@
 const express = require('express');
 const { AuthenticationClient, DataManagementClient } = require('forge-nodejs-utils');
 
+const Issue = require('../model/issue');
+const IssueTableLimit = 256;
+
 let router = express.Router();
 let auth = new AuthenticationClient(process.env.FORGE_CLIENT_ID, process.env.FORGE_CLIENT_SECRET);
 let data = new DataManagementClient(auth);
 
 function idToUrn(id) {
     return Buffer.from(id).toString('base64').replace(/\=/g, '');
+}
+
+function countIssues() {
+    return new Promise(function(resolve, reject) {
+        Issue.count({}, (err, count) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(count);
+            }
+        });
+    });
 }
 
 router.get('/facilities', async function(req, res) {
@@ -47,6 +62,34 @@ router.get('/facilities/:facility', async function(req, res) {
             }
         }
         res.json(areas);
+    } catch(err) {
+        res.status(500).send(err);
+    }
+});
+
+router.get('/facilities/:facility/issues', function(req, res) {
+    let query = {
+        facility: req.params.facility
+    };
+    Issue.find(query, (err, issues) => {
+        if (err) {
+            res.status(500).send(err);
+        } else {
+            res.json(issues);
+        }
+    });
+});
+
+router.post('/facilities/:facility/issues', async function(req, res) {
+    const { partId, author, text, img, x, y, z } = req.body;
+    const facility = req.params.facility;
+    try {
+        const numIssues = await countIssues();
+        if (numIssues >= IssueTableLimit) {
+            throw new Error('Cannot create more issues.');
+        }
+        const issue = await Issue.create({ createdAt: new Date, facility, partId, author, text, img, x, y, z });
+        res.json(issue);
     } catch(err) {
         res.status(500).send(err);
     }
