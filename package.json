@@ -1,6 +1,6 @@
 {
   "name": "forge-industrial-construction",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Autodesk Forge application demonstrating possible usage in industrial construction.",
   "scripts": {
     "start": "node server.js"
@@ -16,6 +16,8 @@
   "dependencies": {
     "express": "^4.16.4",
     "forge-nodejs-utils": "^0.4.0",
-    "pug": "^2.0.3"
+    "mongoose": "^5.5.3",
+    "pug": "^2.0.3",
+    "validator": "^10.11.0"
   }
 }

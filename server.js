@@ -1,10 +1,10 @@
 const express = require('express');
 const path = require('path');
 
-const { FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, FORGE_BUCKET, GOOGLE_MAPS_API_KEY } = process.env;
-if (!FORGE_CLIENT_ID || !FORGE_CLIENT_SECRET || !FORGE_BUCKET || !GOOGLE_MAPS_API_KEY) {
+const { FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, FORGE_BUCKET, GOOGLE_MAPS_API_KEY, MONGODB_URL } = process.env;
+if (!FORGE_CLIENT_ID || !FORGE_CLIENT_SECRET || !FORGE_BUCKET || !GOOGLE_MAPS_API_KEY || !MONGODB_URL) {
     console.warn('Following env. variables must be provided in order to run this application:');
-    console.warn('FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, FORGE_BUCKET, GOOGLE_MAPS_API_KEY');
+    console.warn('FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, FORGE_BUCKET, GOOGLE_MAPS_API_KEY, MONGODB_URL');
     return;
 }
 
@@ -26,4 +26,7 @@ app.use('/', function(req, res) {
 });
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Server listening on port ${port}`));
+const db = require('./database');
+db.connect()
+    .then(() => app.listen(port, () => console.log(`Server listening on port ${port}`)))
+    .catch((err) => console.error(err));

@@ -3,8 +3,12 @@ head
   include partials/head.pug
   link(rel='stylesheet' href='https://developer.api.autodesk.com/modelderivative/v2/viewers/6.*/style.css')
   link(rel='stylesheet' href='/stylesheets/facility.css')
+  link(rel='stylesheet' href='/scripts/extensions/issues.css')
   script(src='https://developer.api.autodesk.com/modelderivative/v2/viewers/6.*/viewer3D.js')
   script(src='https://petrbroz.github.io/forge-viewer-utils/master/Utilities.js')
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js')
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.js')
+  script(src='https://cdn.jsdelivr.net/npm/chartjs-plugin-streaming@1.7.1/dist/chartjs-plugin-streaming.min.js')
 #container
   #header
     a(href="/")
@@ -15,6 +19,27 @@ head
     h5 Facility: #{facility}
     a(href="/") Back to Map
   #sidebar
-    table#models.table
+    table#models.table.table-sm
+    ul#sidebar-tabs.nav.nav-tabs.nav-fill.mb-3(role='tablist')
+      li.nav-item
+        a#realtime-tab.nav-link.active(data-toggle='tab' href='#realtime' role='tab' aria-controls='realtime' aria-selected='true') Realtime
+      li.nav-item
+        a#issues-tab.nav-link(data-toggle='tab' href='#issues' role='tab' aria-controls='issues' aria-selected='false') Issues
+    #sidebar-tabs-content.tab-content
+      #realtime.tab-pane.fade.show.active(role='tabpanel' aria-labelledby='realtime-tab')
+        div.alert.alert-secondary Select a single part in the model
+        canvas#temperature-chart(width='100%')
+        canvas#pressure-chart(width='100%')
+      #issues.tab-pane.fade(role='tabpanel' aria-labelledby='issues-tab')
+        table#issues-table.table.table-hover.table-sm
+          thead
+            tr
+              th(scope="col") Date
+              th(scope="col") Author
+              th(scope="col") Note
+          tbody
 include partials/footer.pug
+script(src="https://cdn.datatables.net/v/bs4/dt-1.10.18/sl-1.2.6/datatables.min.js")
+script(src='/scripts/extensions/issues.js')
+script(src='/scripts/extensions/heatmap.js')
 script(src='/scripts/facility.js')
