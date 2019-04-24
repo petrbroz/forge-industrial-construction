@@ -83,6 +83,14 @@ async function initModelsTable(facility) {
             }
         }
     });
+
+    // By default, load all models for the first available area
+    const area = Object.getOwnPropertyNames(areas)[0];
+    const checkboxes = Array.from($(`#models input[data-area="${area}"]`));
+    for (const checkbox of checkboxes) {
+        checkbox.checked = true;
+        addModel(checkbox.value);
+    }
 }
 
 function addModel(urn) {
