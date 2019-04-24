@@ -19,7 +19,8 @@ async function initViewer() {
 }
 
 async function initSidebar(facility) {
-    await initModelsTable(facility);
+    initModelsTable(facility);
+    initCharts(facility);
 }
 
 async function initModelsTable(facility) {
@@ -103,6 +104,75 @@ async function initModelsTable(facility) {
     }
 }
 
+function initCharts(facility) {
+    const temperatureChart = new Chart(document.getElementById('temperature-chart').getContext('2d'), {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: 'Temperature [F]',
+                borderColor: 'rgba(255, 196, 0, 1.0)',
+                backgroundColor: 'rgba(255, 196, 0, 0.5)',
+                data: []
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{ type: 'realtime', realtime: { delay: 2000 } }],
+                yAxes: [{ ticks: { beginAtZero: true } }]
+            }
+        }
+    });
+
+    const pressureChart = new Chart(document.getElementById('pressure-chart').getContext('2d'), {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: 'Pressure [MPa]',
+                borderColor: 'rgba(255, 196, 0, 1.0)',
+                backgroundColor: 'rgba(255, 196, 0, 0.5)',
+                data: []
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{ type: 'realtime', realtime: { delay: 2000 } }],
+                yAxes: [{ ticks: { beginAtZero: true } }]
+            }
+        }
+    });
+
+    const $alert =  $('#realtime div.alert');
+    const $temperatureChart = $('#temperature-chart');
+    const $pressureChart = $('#pressure-chart');
+    $alert.show();
+    $temperatureChart.hide();
+    $pressureChart.hide();
+    NOP_VIEWER.addEventListener(Autodesk.Viewing.AGGREGATE_SELECTION_CHANGED_EVENT, function(ev) {
+        const results = NOP_VIEWER.getAggregateSelection();
+        if (results.length === 1 && results[0].selection.length === 1) {
+            console.log('Selected model', results[0].model, 'dbid', results[0].selection);
+            $alert.hide();
+            $temperatureChart.show();
+            $pressureChart.show();
+        } else {
+            $alert.show();
+            $temperatureChart.hide();
+            $pressureChart.hide();
+        }
+    });
+
+    setInterval(function() {
+        temperatureChart.data.datasets[0].data.push({
+            x: Date.now(),
+            y: 175.0 + Math.random() * 50.0
+        });
+        pressureChart.data.datasets[0].data.push({
+            x: Date.now(),
+            y: 975.0 + Math.random() * 50.0
+        });
+    }, 1000);
+}
+
 function addModel(urn) {
     const models = NOP_VIEWER.getVisibleModels();
     const model = models.find(m => m.getData().urn === urn);
@@ -128,7 +198,9 @@ function removeModel(urn) {
     }
 }
 
-$(function() {
-    initViewer();
-    initSidebar('montreal');
+$(async function() {
+    await initViewer();
+    const urlTokens = window.location.pathname.split('/');
+    const facility = urlTokens[urlTokens.length - 1];
+    initSidebar(facility);
 });

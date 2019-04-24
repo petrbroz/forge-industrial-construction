@@ -6,6 +6,9 @@ head
   link(rel='stylesheet' href='/scripts/extensions/issues.css')
   script(src='https://developer.api.autodesk.com/modelderivative/v2/viewers/6.*/viewer3D.js')
   script(src='https://petrbroz.github.io/forge-viewer-utils/master/Utilities.js')
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js')
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.js')
+  script(src='https://cdn.jsdelivr.net/npm/chartjs-plugin-streaming@1.7.1/dist/chartjs-plugin-streaming.min.js')
 #container
   #header
     a(href="/")
@@ -23,7 +26,10 @@ head
       li.nav-item
         a#issues-tab.nav-link(data-toggle='tab' href='#issues' role='tab' aria-controls='issues' aria-selected='false') Issues
     #sidebar-tabs-content.tab-content
-      #realtime.tab-pane.fade.show.active(role='tabpanel' aria-labelledby='realtime-tab') Realtime content
+      #realtime.tab-pane.fade.show.active(role='tabpanel' aria-labelledby='realtime-tab')
+        div.alert.alert-secondary Select a single part in the model
+        canvas#temperature-chart(width='100%')
+        canvas#pressure-chart(width='100%')
       #issues.tab-pane.fade(role='tabpanel' aria-labelledby='issues-tab') Issues content
 include partials/footer.pug
 script(src='/scripts/extensions/issues.js')
