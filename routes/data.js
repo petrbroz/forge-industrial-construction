@@ -9,24 +9,46 @@ function idToUrn(id) {
     return Buffer.from(id).toString('base64').replace(/\=/g, '');
 }
 
-router.get('/models', async function(req, res, next) {
+router.get('/facilities', async function(req, res) {
+    try {
+        // List of facilities currently hard-coded
+        const facilities = [
+            {
+                name: 'Montreal Facility',
+                id: 'montreal',
+                region: [
+                    { lat: 45.643634, lng: -73.527693 },
+                    { lat: 45.644899, lng: -73.526520 },
+                    { lat: 45.642727, lng: -73.521655 },
+                    { lat: 45.641473, lng: -73.522854 }
+                ]
+            }
+        ];
+        res.json(facilities);
+    } catch(err) {
+        res.status(500).send(err);
+    }
+});
+
+router.get('/facilities/:facility', async function(req, res) {
     try {
         const objects = await data.objects(process.env.FORGE_BUCKET);
-        const models = new Map();
+        const areas = {};
         for (const object of objects) {
-            const match = object.objectKey.match(/^Area\.(\d+)\.(\w+)\.NWD$/);
+            const match = object.objectKey.match(/^(\w+)\-(\d+)\-(\w+)\.nwd$/);
             if (match) {
-                const [_, area, type] = match;
-                if (!models.has(area)) {
-                    models.set(area, { area, datasets: {} });
+                const facilityKey = match[1].toLowerCase();
+                if (facilityKey === req.params.facility) {
+                    const areaKey = match[2];
+                    const typeKey = match[3].toLowerCase();
+                    const area = areas[areaKey] = areas[areaKey] || {};
+                    area[typeKey] = idToUrn(object.objectId);
                 }
-                const model = models.get(area);
-                model.datasets[type] = idToUrn(object.objectId);
             }
         }
-        res.json(Array.from(models.values()));
+        res.json(areas);
     } catch(err) {
-        next(err);
+        res.status(500).send(err);
     }
 });
 
