@@ -47,24 +47,67 @@ async function initModelsTable(facility) {
     // Setup event handlers
     $('#models input').on('change', function() {
         const urn = this.value;
-        const models = NOP_VIEWER.getVisibleModels();
-        const model = models.find(m => m.getData().urn === urn);
-
-        if (this.checked && !model) {
-            Autodesk.Viewing.Document.load(
-                'urn:' + urn,
-                function(doc) {
-                    const viewables = doc.getRoot().search({ type: 'geometry' });
-                    NOP_VIEWER.loadModel(doc.getViewablePath(viewables[0]));
-                },
-                function(err) {
-                    console.error(err);
-                });
-        } else if (!this.checked && model) {
-            NOP_VIEWER.impl.unloadModel(model);
+        if (this.checked) {
+            addModel(urn);
+        } else {
+            removeModel(urn);
         }
     });
-    // TODO: event handlers for group-selecting areas or types
+    $('#models .model-area-select').on('click', function() {
+        const area = $(this).text();
+        const checkboxes = Array.from($(`#models input[data-area="${area}"]`));
+        if (checkboxes.filter(el => el.checked).length > 0) {
+            for (const checkbox of checkboxes) {
+                checkbox.checked = false;
+                removeModel(checkbox.value);
+            }
+        } else {
+            for (const checkbox of checkboxes) {
+                checkbox.checked = true;
+                addModel(checkbox.value);
+            }
+        }
+    });
+    $('#models .model-type-select').on('click', function() {
+        const type = $(this).text();
+        const checkboxes = Array.from($(`#models input[data-type="${type}"]`));
+        if (checkboxes.filter(el => el.checked).length > 0) {
+            for (const checkbox of checkboxes) {
+                checkbox.checked = false;
+                removeModel(checkbox.value);
+            }
+        } else {
+            for (const checkbox of checkboxes) {
+                checkbox.checked = true;
+                addModel(checkbox.value);
+            }
+        }
+    });
+}
+
+function addModel(urn) {
+    const models = NOP_VIEWER.getVisibleModels();
+    const model = models.find(m => m.getData().urn === urn);
+    if (!model) {
+        Autodesk.Viewing.Document.load(
+            'urn:' + urn,
+            function(doc) {
+                const viewables = doc.getRoot().search({ type: 'geometry' });
+                NOP_VIEWER.loadModel(doc.getViewablePath(viewables[0]));
+            },
+            function(err) {
+                console.error(err);
+            }
+        );
+    }
+}
+
+function removeModel(urn) {
+    const models = NOP_VIEWER.getVisibleModels();
+    const model = models.find(m => m.getData().urn === urn);
+    if (model) {
+        NOP_VIEWER.impl.unloadModel(model);
+    }
 }
 
 $(function() {
