@@ -30,8 +30,16 @@ head
         div.alert.alert-secondary Select a single part in the model
         canvas#temperature-chart(width='100%')
         canvas#pressure-chart(width='100%')
-      #issues.tab-pane.fade(role='tabpanel' aria-labelledby='issues-tab') Issues content
+      #issues.tab-pane.fade(role='tabpanel' aria-labelledby='issues-tab')
+        table#issues-table.table.table-hover.table-sm
+          thead
+            tr
+              th(scope="col") Date
+              th(scope="col") Author
+              th(scope="col") Note
+          tbody
 include partials/footer.pug
+script(src="https://cdn.datatables.net/v/bs4/dt-1.10.18/sl-1.2.6/datatables.min.js")
 script(src='/scripts/extensions/issues.js')
 script(src='/scripts/extensions/heatmap.js')
 script(src='/scripts/facility.js')

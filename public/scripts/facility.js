@@ -21,6 +21,7 @@ async function initViewer() {
 async function initSidebar(facility) {
     initModelsTable(facility);
     initCharts(facility);
+    initTables(facility);
 }
 
 async function initModelsTable(facility) {
@@ -171,6 +172,34 @@ function initCharts(facility) {
             y: 975.0 + Math.random() * 50.0
         });
     }, 1000);
+}
+
+function initTables(facility) {
+    let issuesTable;
+
+    async function updateIssues() {
+        if (issuesTable) {
+            issuesTable.rows().deselect();
+            issuesTable.destroy();
+        }
+        const $tbody = $('#issues-table > tbody');
+        $tbody.empty();
+
+        const resp = await fetch(`/api/data/facilities/${facility}/issues`);
+        const issues = await resp.json();
+        for (const issue of issues) {
+            $tbody.append(`
+                <tr>
+                    <td>${new Date(issue.createdAt).toLocaleDateString()}</td>
+                    <td>${issue.author}</td>
+                    <td>${issue.text}</td>
+                </tr>
+            `);
+        }
+        issuesTable = $('#issues-table').DataTable(/*{ select: true }*/);
+    }
+
+    updateIssues();
 }
 
 function addModel(urn) {
