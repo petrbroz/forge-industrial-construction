@@ -11,16 +11,20 @@ function idToUrn(id) {
 
 router.get('/facilities', async function(req, res) {
     try {
-        const objects = await data.objects(process.env.FORGE_BUCKET);
-        const facilities = new Set();
-        for (const object of objects) {
-            const match = object.objectKey.match(/^(\w+)\-(\d+)\-(\w+)\.nwd$/);
-            if (match) {
-                const facilityKey = match[1].toLowerCase();
-                facilities.add(facilityKey);
+        // List of facilities currently hard-coded
+        const facilities = [
+            {
+                name: 'Montreal Facility',
+                id: 'montreal',
+                region: [
+                    { lat: 45.643634, lng: -73.527693 },
+                    { lat: 45.644899, lng: -73.526520 },
+                    { lat: 45.642727, lng: -73.521655 },
+                    { lat: 45.641473, lng: -73.522854 }
+                ]
             }
-        }
-        res.json(Array.from(facilities.values()));
+        ];
+        res.json(facilities);
     } catch(err) {
         res.status(500).send(err);
     }

@@ -1,11 +1,13 @@
 doctype html
 head
   include partials/head.pug
+  link(rel='stylesheet' href='/stylesheets/index.css')
 #container
   #header
-    img(src='/images/forge-logo.png' alt='Autodesk Forge Industrial Construction Demo')
+    a(href="/")
+      img(src='/images/forge-logo.png' alt='Autodesk Forge Industrial Construction Demo')
     h Industrial Construction Demo
-  #viewer
-  #sidebar
-    include partials/sidebar.pug
-  include partials/footer.pug
+  div#map
+include partials/footer.pug
+script(src='/scripts/index.js')
+script(src='https://maps.googleapis.com/maps/api/js?callback=initMap&key=' + GOOGLE_MAPS_API_KEY,async,defer)
