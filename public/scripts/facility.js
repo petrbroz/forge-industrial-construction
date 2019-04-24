@@ -6,7 +6,15 @@ async function initViewer() {
         callback(token.access_token, token.expires_in);
     }
     await Autodesk.Viewing.Utilities.Initialize(document.getElementById('viewer'), getAccessToken);
-    NOP_VIEWER.loadExtension('IssuesExtension');
+    const viewer = NOP_VIEWER;
+    viewer.loadExtension('IssuesExtension');
+    viewer.setQualityLevel(/* ambient shadows */ false, /* antialiasing */ true);
+    viewer.setGroundShadow(true);
+    viewer.setGroundReflection(false);
+    viewer.setGhosting(true);
+    viewer.setEnvMapBackground(false);
+    viewer.setLightPreset(1);
+    viewer.setSelectionColor(new THREE.Color(0xEBB30B));
 }
 
 async function initSidebar(facility) {
