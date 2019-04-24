@@ -8,6 +8,7 @@ async function initViewer() {
     await Autodesk.Viewing.Utilities.Initialize(document.getElementById('viewer'), getAccessToken);
     const viewer = NOP_VIEWER;
     viewer.loadExtension('IssuesExtension');
+    viewer.loadExtension('HeatmapExtension');
     viewer.setQualityLevel(/* ambient shadows */ false, /* antialiasing */ true);
     viewer.setGroundShadow(true);
     viewer.setGroundReflection(false);
