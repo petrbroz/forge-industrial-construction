@@ -32,10 +32,9 @@ async function initSidebar(facility) {
     initCharts(facility);
     initTables(facility);
 
-    // Prevent clicking inside the Google Map from closing its parent dropdown
-    $('#map').on('click', function(e) {
-        e.stopPropagation();
-    });
+    // Prevent clicking inside the navigation dropdown from closing the dropdown
+    $('#map').on('click', function(e) { e.stopPropagation(); });
+    $('#models').on('click', function(e) { e.stopPropagation(); });
 }
 
 async function initModelsTable(facility) {
@@ -284,6 +283,22 @@ function initTables(facility) {
                     viewer.fitToView([partId], model);
                 }
             }
+        }
+    });
+
+    // Only enable the issue form when exactly one part is selected
+    const $alert =  $('#issues div.alert');
+    const $form = $('#issue-form');
+    $alert.show();
+    $form.hide();
+    NOP_VIEWER.addEventListener(Autodesk.Viewing.AGGREGATE_SELECTION_CHANGED_EVENT, function(ev) {
+        const results = NOP_VIEWER.getAggregateSelection();
+        if (results.length === 1 && results[0].selection.length === 1) {
+            $alert.hide();
+            $form.show();
+        } else {
+            $alert.show();
+            $form.hide();
         }
     });
 }
