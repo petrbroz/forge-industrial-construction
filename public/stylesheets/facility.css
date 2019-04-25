@@ -68,6 +68,10 @@
     width: 100%;
 }
 
+#location .dropdown-menu {
+    padding: 0;
+}
+
 #map {
     height: 400px;
 }

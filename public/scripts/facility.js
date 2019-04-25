@@ -31,6 +31,11 @@ async function initSidebar(facility) {
     initModelsTable(facility);
     initCharts(facility);
     initTables(facility);
+
+    // Prevent clicking inside the Google Map from closing its parent dropdown
+    $('#map').on('click', function(e) {
+        e.stopPropagation();
+    });
 }
 
 async function initModelsTable(facility) {
