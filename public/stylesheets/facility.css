@@ -64,6 +64,20 @@
     font-size: smaller;
 }
 
+.dataTables_length select {
+    width: auto;
+}
+
+.dataTables_filter input {
+    display: inline;
+    width: auto;
+    margin-left: 0.5em;
+}
+
+.dataTables_paginate ul.pagination {
+    justify-content: flex-end;
+}
+
 #location .dropdown, #location .dropdown-toggle, #location .dropdown-menu {
     width: 100%;
 }
