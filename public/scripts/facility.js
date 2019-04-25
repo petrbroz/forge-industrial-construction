@@ -210,6 +210,7 @@ function initTables(facility) {
             $tbody.append(`
                 <tr>
                     <td>${new Date(issue.createdAt).toLocaleDateString()}</td>
+                    <td><a href="#" class="part-link">${issue.partId}</a></td>
                     <td>${issue.author}</td>
                     <td>${issue.text}</td>
                 </tr>
@@ -263,6 +264,22 @@ function initTables(facility) {
             }
         });
         ev.preventDefault();
+    });
+
+    // Highlight a part in 3D view when its ID is clicked in the issues table
+    $('#issues-table').on('click', function(ev) {
+        if (ev.target.innerText.match(/^\d+$/)) {
+            const partId = parseInt(ev.target.innerText);
+            const viewer = NOP_VIEWER;
+            const results = viewer.getAggregateSelection();
+            if (results.length === 1 && results[0].selection.length === 1 && results[0].selection[0] === partId) {
+                // skip
+            } else {
+                // TODO: fix the select and fitToView calls for multi-model scenarios
+                viewer.select(partId);
+                viewer.fitToView([partId]);
+            }
+        }
     });
 }
 
