@@ -31,6 +31,11 @@ async function initSidebar(facility) {
     initModelsTable(facility);
     initCharts(facility);
     initTables(facility);
+
+    // Prevent clicking inside the Google Map from closing its parent dropdown
+    $('#map').on('click', function(e) {
+        e.stopPropagation();
+    });
 }
 
 async function initModelsTable(facility) {
@@ -44,17 +49,20 @@ async function initModelsTable(facility) {
     }
 
     // Create table header
-    const $table = $('#models');
-    $table.empty();
-    const $header = $table.append(`<th></th>`);
+    const $thead = $('<thead></thead>');
+    const $row = $('<tr></tr>');
+    $row.append(`<th>Area</th>`);
     for (const areaKey in areas) {
-        $header.append(`<td class="model-area-select">${areaKey}</td>`);
+        $row.append(`<th class="model-area-select">${areaKey}</th>`);
     }
+    $thead.append($row);
+    const $table = $('#models').empty().append($thead);
 
     // Create table content
+    const $tbody = $(`<tbody></tbody>`);
     for (const type of types.values()) {
-        const $row = $table.append(`<tr></tr>`);
-        $row.append(`<td class="model-type-select">${type}</td>`);
+        const $row = $('<tr></tr>');
+        $row.append(`<th class="model-type-select">${type}</th>`);
         for (const areaKey in areas) {
             const area = areas[areaKey];
             if (area[type]) {
@@ -63,7 +71,9 @@ async function initModelsTable(facility) {
                 $row.append(`<td></td>`);
             }
         }
+        $tbody.append($row);
     }
+    $table.append($tbody);
 
     // Setup event handlers
     $('#models input').on('change', function() {
@@ -160,7 +170,6 @@ function initCharts(facility) {
     NOP_VIEWER.addEventListener(Autodesk.Viewing.AGGREGATE_SELECTION_CHANGED_EVENT, function(ev) {
         const results = NOP_VIEWER.getAggregateSelection();
         if (results.length === 1 && results[0].selection.length === 1) {
-            console.log('Selected model', results[0].model, 'dbid', results[0].selection);
             $alert.hide();
             $temperatureChart.show();
             $pressureChart.show();
@@ -200,6 +209,7 @@ function initTables(facility) {
             $tbody.append(`
                 <tr>
                     <td>${new Date(issue.createdAt).toLocaleDateString()}</td>
+                    <td><a href="#" class="part-link" data-urn="${issue.urn}" data-dbid="${issue.partId}">${issue.partId}</a></td>
                     <td>${issue.author}</td>
                     <td>${issue.text}</td>
                 </tr>
@@ -209,6 +219,73 @@ function initTables(facility) {
     }
 
     updateIssues();
+
+    // After a mouse click on 3D viewport, populate X/Y/Z of the intersection
+    $('#viewer').on('click', function(ev) {
+        const viewer = NOP_VIEWER;
+        let intersections = [];
+        const bounds = document.getElementById('viewer').getBoundingClientRect();
+        viewer.impl.castRayViewport(viewer.impl.clientToViewport(ev.clientX - bounds.left, ev.clientY - bounds.top), false, null, null, intersections);
+        if (intersections.length > 0) {
+            const intersection = intersections[0];
+            $('#issue-model').val(intersection.model.getData().urn);
+            $('#issue-part').val(intersection.dbId);
+            $('#issue-position-x').val(intersection.point.x.toFixed(2));
+            $('#issue-position-y').val(intersection.point.y.toFixed(2));
+            $('#issue-position-z').val(intersection.point.z.toFixed(2));
+        }
+    });
+
+    // Handle the event of submitting new issue
+    $('#issue-form button').on('click', function(ev) {
+        const urn = $('#issue-model').val();
+        const partId = parseInt($('#issue-part').val());
+        const text = $('#issue-title').val();
+        const author = $('#issue-author').val();
+        const x = parseFloat($('#issue-position-x').val());
+        const y = parseFloat($('#issue-position-y').val());
+        const z = parseFloat($('#issue-position-z').val());
+        fetch(`/api/data/facilities/${facility}/issues`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ urn, partId, text, author, x, y, z })
+        }).then(resp => {
+            const $modal = $('#issue-modal');
+            if (resp.status === 200) {
+                $('#issue-modal .modal-body > p').text(`Issue Response: ${resp.statusText} (${resp.status})`);
+                $modal.modal('show');
+                setTimeout(function() { $modal.modal('hide'); }, 1000);
+                updateIssues();
+            } else {
+                resp.text().then(text => {
+                    $('#issue-modal .modal-body > p').text(`Issue Response: ${resp.statusText} (${resp.status}) ${text}`);
+                    $modal.modal('show');
+                    setTimeout(function() { $modal.modal('hide'); }, 5000);
+                });
+            }
+        });
+        ev.preventDefault();
+    });
+
+    // Highlight a part in 3D view when its ID is clicked in the issues table
+    $('#issues-table').on('click', function(ev) {
+        const urn = $(ev.target).data('urn');
+        const dbid = $(ev.target).data('dbid');
+        if (urn && dbid) {
+            const partId = parseInt(dbid);
+            const viewer = NOP_VIEWER;
+            const results = viewer.getAggregateSelection();
+            if (results.length === 1 && results[0].selection.length === 1 && results[0].selection[0] === partId) {
+                // skip
+            } else {
+                const model = viewer.impl.findModel(m => m.getData().urn === urn);
+                if (model) {
+                    viewer.select(partId, model);
+                    viewer.fitToView([partId], model);
+                }
+            }
+        }
+    });
 }
 
 async function initMap() {

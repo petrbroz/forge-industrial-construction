@@ -1,8 +1,8 @@
 label.markup {
     position: absolute;
     padding: 0.5em;
-    color: #adb5bd;
-    background: #212529;
+    color: #666;
+    background: white;
     opacity: 0.9;
     border: 1px solid #adb5bd;
     border-radius: 0 15px 15px 15px;

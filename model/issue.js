@@ -1,8 +1,17 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 
+const AcceptedFacilities = [
+    'montreal',
+    'el'
+];
+
+function validateURN(value) {
+    return value.match(/^[a-zA-Z0-9]{1,128}$/);
+}
+
 function validateFacility(value) {
-    return value === 'montreal';
+    return AcceptedFacilities.indexOf(value) !== -1;
 }
 
 function validateAuthor(value) {
@@ -18,6 +27,11 @@ const issueSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
+    urn: {
+        type: String,
+        required: true,
+        validate: validateURN
+    },    
     facility: {
         type: String,
         required: true,

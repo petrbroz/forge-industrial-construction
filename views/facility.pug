@@ -21,6 +21,7 @@ head
       .dropdown-menu(aria-labelledby="location-button")
         div#map
   #sidebar
+    h5 Model Visibility
     table#models.table.table-sm
     ul#sidebar-tabs.nav.nav-tabs.nav-fill.mb-3(role='tablist')
       li.nav-item
@@ -29,17 +30,54 @@ head
         a#issues-tab.nav-link(data-toggle='tab' href='#issues' role='tab' aria-controls='issues' aria-selected='false') Issues
     #sidebar-tabs-content.tab-content
       #realtime.tab-pane.fade.show.active(role='tabpanel' aria-labelledby='realtime-tab')
+        h5 Realtime Data
         div.alert.alert-secondary Select a single part in the model
         canvas#temperature-chart(width='100%')
         canvas#pressure-chart(width='100%')
       #issues.tab-pane.fade(role='tabpanel' aria-labelledby='issues-tab')
+        h5 Existing Issues
         table#issues-table.table.table-hover.table-sm
           thead
             tr
               th(scope="col") Date
+              th(scope="col") Part #
               th(scope="col") Author
               th(scope="col") Note
           tbody
+        h5 Report New Issue
+        form#issue-form
+          .row.mb-2
+            label.col-sm-2.col-form-label(for='issue-model') Model
+            .col-sm-10
+              input#issue-model.form-control-plaintext(type='text' readonly='' value='0')
+          .row.mb-2
+            label.col-sm-2.col-form-label(for='issue-part') Part #
+            .col-sm-10
+              input#issue-part.form-control-plaintext(type='text' readonly='' value='0')
+          .row.mb-2
+            label.col-sm-2.col-form-label(for='issue-title') Description
+            .col-sm-10
+              input#issue-title.form-control(type='text' value='Short issue description.')
+          .row.mb-2
+            label.col-sm-2.col-form-label(for='issue-author') Author
+            .col-sm-10
+              input#issue-author.form-control(type='text' value='John Doe')
+          .row.mb-2
+            label.col-sm-1.col-form-label(for='issue-position-x') X
+            .col-sm-3
+              input#issue-position-x.form-control(type='text' value='0.0')
+            label.col-sm-1.col-form-label(for='issue-position-y') Y
+            .col-sm-3
+              input#issue-position-y.form-control(type='text' value='0.0')
+            label.col-sm-1.col-form-label(for='issue-position-z') Z
+            .col-sm-3
+              input#issue-position-z.form-control(type='text' value='0.0')
+          button.btn.btn-primary.btn-block(type='submit') Submit
+        #issue-modal.modal.fade(tabindex='-1' role='dialog' aria-hidden='true')
+          .modal-dialog
+            .modal-content
+              .modal-body
+                p ...
 include partials/footer.pug
 script(src="https://cdn.datatables.net/v/bs4/dt-1.10.18/sl-1.2.6/datatables.min.js")
 script(src='/scripts/extensions/issues.js')
