@@ -59,3 +59,7 @@
 #models .model-area-select:hover, #models .model-type-select:hover {
     text-decoration: underline;
 }
+
+.dataTables_wrapper {
+    font-size: smaller;
+}
