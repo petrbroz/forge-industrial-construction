@@ -1,0 +1,36 @@
+{
+    "name": "forge-industrial-construction",
+    "description": "Autodesk Forge application demonstrating possible usage in industrial construction.",
+    "repository": "https://github.com/petrbroz/forge-industrial-construction",
+    "logo": "https://avatars0.githubusercontent.com/u/8017462?v=3&s=200",
+    "keywords": [
+        "autodesk",
+        "forge",
+        "industrial",
+        "construction"
+    ],
+    "env": {
+        "FORGE_CLIENT_ID": {
+            "description": "Forge client ID."
+        },
+        "FORGE_CLIENT_SECRET": {
+            "description": "Forge client secret."
+        },
+        "FORGE_BUCKET": {
+            "description": "Name of Forge Data Management bucket to read data from."
+        },
+        "GOOGLE_MAPS_API_KEY": {
+            "description": "API key to use for the Google Maps integration."
+        },
+        "MONGODB_URL": {
+            "description": "Connection string to a sample MongoDB database."
+        }
+    },
+    "website": "https://forge.autodesk.com",
+    "success_url": "/",
+    "buildpacks": [
+        {
+            "url": "https://github.com/heroku/heroku-buildpack-nodejs.git"
+        }
+    ]
+}

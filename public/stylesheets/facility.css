@@ -32,9 +32,9 @@
     align-items: center;
 }
 
-#location > * {
+/* #location > * {
     margin: 0 1em 0 0;
-}
+} */
 
 #viewer {
     grid-row: 2 / 3;
@@ -58,4 +58,16 @@
 
 #models .model-area-select:hover, #models .model-type-select:hover {
     text-decoration: underline;
+}
+
+.dataTables_wrapper {
+    font-size: smaller;
+}
+
+#location .dropdown, #location .dropdown-toggle, #location .dropdown-menu {
+    width: 100%;
+}
+
+#map {
+    height: 400px;
 }

@@ -16,8 +16,10 @@ head
     h Industrial Construction Demo
   #viewer
   #location
-    h5 Facility: #{facility}
-    a(href="/") Back to Map
+    .dropdown
+      button.btn.btn-secondary.dropdown-toggle(type="button" id="location-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Facility: #{facility}
+      .dropdown-menu(aria-labelledby="location-button")
+        div#map
   #sidebar
     table#models.table.table-sm
     ul#sidebar-tabs.nav.nav-tabs.nav-fill.mb-3(role='tablist')
@@ -43,3 +45,4 @@ script(src="https://cdn.datatables.net/v/bs4/dt-1.10.18/sl-1.2.6/datatables.min.
 script(src='/scripts/extensions/issues.js')
 script(src='/scripts/extensions/heatmap.js')
 script(src='/scripts/facility.js')
+script(src='https://maps.googleapis.com/maps/api/js?callback=initMap&key=' + GOOGLE_MAPS_API_KEY, async, defer)

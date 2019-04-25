@@ -19,7 +19,7 @@ app.use('/api/data', require('./routes/data'));
 app.use('/facility/:name', function(req, res) {
     let name = req.params.name;
     name = name.charAt(0).toUpperCase() + name.slice(1);
-    res.render('facility', { facility: name });
+    res.render('facility', { facility: name, GOOGLE_MAPS_API_KEY });
 });
 app.use('/', function(req, res) {
     res.render('index', { GOOGLE_MAPS_API_KEY });

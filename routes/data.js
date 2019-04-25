@@ -8,6 +8,30 @@ let router = express.Router();
 let auth = new AuthenticationClient(process.env.FORGE_CLIENT_ID, process.env.FORGE_CLIENT_SECRET);
 let data = new DataManagementClient(auth);
 
+const FacilityData = [
+    {
+        name: 'Montreal Facility',
+        id: 'montreal',
+        region: [
+            { lat: 45.643634, lng: -73.527693 },
+            { lat: 45.644899, lng: -73.526520 },
+            { lat: 45.642727, lng: -73.521655 },
+            { lat: 45.641473, lng: -73.522854 }
+        ]
+    },
+    {
+        name: 'El Facility',
+        id: 'el',
+        region: [
+            { lat: 45.641858, lng: -73.522272  },
+            { lat: 45.643710, lng: -73.520559 },
+            { lat: 45.643289, lng: -73.519494 },
+            { lat: 45.642545, lng: -73.519196 },
+            { lat: 45.640949, lng: -73.520143 }
+        ]
+    }
+];
+
 function idToUrn(id) {
     return Buffer.from(id).toString('base64').replace(/\=/g, '');
 }
@@ -26,20 +50,7 @@ function countIssues() {
 
 router.get('/facilities', async function(req, res) {
     try {
-        // List of facilities currently hard-coded
-        const facilities = [
-            {
-                name: 'Montreal Facility',
-                id: 'montreal',
-                region: [
-                    { lat: 45.643634, lng: -73.527693 },
-                    { lat: 45.644899, lng: -73.526520 },
-                    { lat: 45.642727, lng: -73.521655 },
-                    { lat: 45.641473, lng: -73.522854 }
-                ]
-            }
-        ];
-        res.json(facilities);
+        res.json(FacilityData);
     } catch(err) {
         res.status(500).send(err);
     }
