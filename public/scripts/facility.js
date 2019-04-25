@@ -16,6 +16,15 @@ async function initViewer() {
     viewer.setEnvMapBackground(false);
     viewer.setLightPreset(1);
     viewer.setSelectionColor(new THREE.Color(0xEBB30B));
+
+    const geometryLoadedCallback = () => {
+        viewer.removeEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, geometryLoadedCallback);
+        //viewer.displayViewCube(true);
+        //viewer.setViewCube('front, top, right');
+        viewer.navigation.toOrthographic();
+        viewer.fitToView();
+    };
+    viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, geometryLoadedCallback);
 }
 
 async function initSidebar(facility) {
