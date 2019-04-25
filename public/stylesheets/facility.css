@@ -57,7 +57,7 @@
 }
 
 #models .model-area-select:hover, #models .model-type-select:hover {
-    text-decoration: underline;
+    font-weight: bold;
 }
 
 .dataTables_wrapper {

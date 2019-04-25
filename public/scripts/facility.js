@@ -44,17 +44,20 @@ async function initModelsTable(facility) {
     }
 
     // Create table header
-    const $table = $('#models');
-    $table.empty();
-    const $header = $table.append(`<th></th>`);
+    const $thead = $('<thead></thead>');
+    const $row = $('<tr></tr>');
+    $row.append(`<th>Area</th>`);
     for (const areaKey in areas) {
-        $header.append(`<td class="model-area-select">${areaKey}</td>`);
+        $row.append(`<th class="model-area-select">${areaKey}</th>`);
     }
+    $thead.append($row);
+    const $table = $('#models').empty().append($thead);
 
     // Create table content
+    const $tbody = $(`<tbody></tbody>`);
     for (const type of types.values()) {
-        const $row = $table.append(`<tr></tr>`);
-        $row.append(`<td class="model-type-select">${type}</td>`);
+        const $row = $('<tr></tr>');
+        $row.append(`<th class="model-type-select">${type}</th>`);
         for (const areaKey in areas) {
             const area = areas[areaKey];
             if (area[type]) {
@@ -63,7 +66,9 @@ async function initModelsTable(facility) {
                 $row.append(`<td></td>`);
             }
         }
+        $tbody.append($row);
     }
+    $table.append($tbody);
 
     // Setup event handlers
     $('#models input').on('change', function() {
