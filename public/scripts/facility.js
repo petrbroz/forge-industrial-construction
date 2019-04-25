@@ -219,6 +219,51 @@ function initTables(facility) {
     }
 
     updateIssues();
+
+    // After a mouse click on 3D viewport, populate X/Y/Z of the intersection
+    $('#viewer').on('click', function(ev) {
+        const viewer = NOP_VIEWER;
+        let intersections = [];
+        const bounds = document.getElementById('viewer').getBoundingClientRect();
+        viewer.impl.castRayViewport(viewer.impl.clientToViewport(ev.clientX - bounds.left, ev.clientY - bounds.top), false, null, null, intersections);
+        if (intersections.length > 0) {
+            const intersection = intersections[0];
+            $('#issue-part').val(intersection.dbId);
+            $('#issue-position-x').val(intersection.point.x.toFixed(2));
+            $('#issue-position-y').val(intersection.point.y.toFixed(2));
+            $('#issue-position-z').val(intersection.point.z.toFixed(2));
+        }
+    });
+
+    // Handle the event of submitting new issue
+    $('#issue-form button').on('click', function(ev) {
+        const partId = parseInt($('#issue-part').val());
+        const text = $('#issue-title').val();
+        const author = $('#issue-author').val();
+        const x = parseFloat($('#issue-position-x').val());
+        const y = parseFloat($('#issue-position-y').val());
+        const z = parseFloat($('#issue-position-z').val());
+        fetch(`/api/data/facilities/${facility}/issues`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ partId, text, author, x, y, z })
+        }).then(resp => {
+            const $modal = $('#issue-modal');
+            if (resp.status === 200) {
+                $('#issue-modal .modal-body > p').text(`Issue Response: ${resp.statusText} (${resp.status})`);
+                $modal.modal('show');
+                setTimeout(function() { $modal.modal('hide'); }, 1000);
+                updateIssues();
+            } else {
+                resp.text().then(text => {
+                    $('#issue-modal .modal-body > p').text(`Issue Response: ${resp.statusText} (${resp.status}) ${text}`);
+                    $modal.modal('show');
+                    setTimeout(function() { $modal.modal('hide'); }, 5000);
+                });
+            }
+        });
+        ev.preventDefault();
+    });
 }
 
 async function initMap() {

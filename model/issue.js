@@ -1,8 +1,13 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 
+const AcceptedFacilities = [
+    'montreal',
+    'el'
+];
+
 function validateFacility(value) {
-    return value === 'montreal';
+    return AcceptedFacilities.indexOf(value) !== -1;
 }
 
 function validateAuthor(value) {
