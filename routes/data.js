@@ -92,14 +92,14 @@ router.get('/facilities/:facility/issues', function(req, res) {
 });
 
 router.post('/facilities/:facility/issues', async function(req, res) {
-    const { partId, author, text, img, x, y, z } = req.body;
+    const { urn, partId, author, text, img, x, y, z } = req.body;
     const facility = req.params.facility;
     try {
         const numIssues = await countIssues();
         if (numIssues >= IssueTableLimit) {
             throw new Error('Cannot create more issues.');
         }
-        const issue = await Issue.create({ createdAt: new Date, facility, partId, author, text, img, x, y, z });
+        const issue = await Issue.create({ createdAt: new Date, urn, facility, partId, author, text, img, x, y, z });
         res.json(issue);
     } catch(err) {
         res.status(500).send(err);

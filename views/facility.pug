@@ -47,6 +47,10 @@ head
         h5 Report New Issue
         form#issue-form
           .row.mb-2
+            label.col-sm-2.col-form-label(for='issue-model') Model
+            .col-sm-10
+              input#issue-model.form-control-plaintext(type='text' readonly='' value='0')
+          .row.mb-2
             label.col-sm-2.col-form-label(for='issue-part') Part #
             .col-sm-10
               input#issue-part.form-control-plaintext(type='text' readonly='' value='0')

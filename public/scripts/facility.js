@@ -170,7 +170,6 @@ function initCharts(facility) {
     NOP_VIEWER.addEventListener(Autodesk.Viewing.AGGREGATE_SELECTION_CHANGED_EVENT, function(ev) {
         const results = NOP_VIEWER.getAggregateSelection();
         if (results.length === 1 && results[0].selection.length === 1) {
-            console.log('Selected model', results[0].model, 'dbid', results[0].selection);
             $alert.hide();
             $temperatureChart.show();
             $pressureChart.show();
@@ -210,7 +209,7 @@ function initTables(facility) {
             $tbody.append(`
                 <tr>
                     <td>${new Date(issue.createdAt).toLocaleDateString()}</td>
-                    <td><a href="#" class="part-link">${issue.partId}</a></td>
+                    <td><a href="#" class="part-link" data-urn="${issue.urn}" data-dbid="${issue.partId}">${issue.partId}</a></td>
                     <td>${issue.author}</td>
                     <td>${issue.text}</td>
                 </tr>
@@ -229,6 +228,7 @@ function initTables(facility) {
         viewer.impl.castRayViewport(viewer.impl.clientToViewport(ev.clientX - bounds.left, ev.clientY - bounds.top), false, null, null, intersections);
         if (intersections.length > 0) {
             const intersection = intersections[0];
+            $('#issue-model').val(intersection.model.getData().urn);
             $('#issue-part').val(intersection.dbId);
             $('#issue-position-x').val(intersection.point.x.toFixed(2));
             $('#issue-position-y').val(intersection.point.y.toFixed(2));
@@ -238,6 +238,7 @@ function initTables(facility) {
 
     // Handle the event of submitting new issue
     $('#issue-form button').on('click', function(ev) {
+        const urn = $('#issue-model').val();
         const partId = parseInt($('#issue-part').val());
         const text = $('#issue-title').val();
         const author = $('#issue-author').val();
@@ -247,7 +248,7 @@ function initTables(facility) {
         fetch(`/api/data/facilities/${facility}/issues`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ partId, text, author, x, y, z })
+            body: JSON.stringify({ urn, partId, text, author, x, y, z })
         }).then(resp => {
             const $modal = $('#issue-modal');
             if (resp.status === 200) {
@@ -268,16 +269,20 @@ function initTables(facility) {
 
     // Highlight a part in 3D view when its ID is clicked in the issues table
     $('#issues-table').on('click', function(ev) {
-        if (ev.target.innerText.match(/^\d+$/)) {
-            const partId = parseInt(ev.target.innerText);
+        const urn = $(ev.target).data('urn');
+        const dbid = $(ev.target).data('dbid');
+        if (urn && dbid) {
+            const partId = parseInt(dbid);
             const viewer = NOP_VIEWER;
             const results = viewer.getAggregateSelection();
             if (results.length === 1 && results[0].selection.length === 1 && results[0].selection[0] === partId) {
                 // skip
             } else {
-                // TODO: fix the select and fitToView calls for multi-model scenarios
-                viewer.select(partId);
-                viewer.fitToView([partId]);
+                const model = viewer.impl.findModel(m => m.getData().urn === urn);
+                if (model) {
+                    viewer.select(partId, model);
+                    viewer.fitToView([partId], model);
+                }
             }
         }
     });
