@@ -10,7 +10,7 @@
 
 Autodesk Forge sample application demonstrating features relevant to the area of industrial construction.
 
-![Screenshot](thumbnail.png)
+![Thumbnail](thumbnail.gif)
 
 ## Live demo
 

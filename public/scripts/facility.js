@@ -1,4 +1,4 @@
-async function initViewer() {
+async function initViewer(facility) {
     async function getAccessToken(callback) {
         const resp = await fetch('/api/auth/token');
         const json = await resp.json();
@@ -17,6 +17,7 @@ async function initViewer() {
     viewer.setLightPreset(1);
     viewer.setSelectionColor(new THREE.Color(0xEBB30B));
 
+    // On first model load, switch to orthohraphic camera and fit model to view
     const geometryLoadedCallback = () => {
         viewer.removeEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, geometryLoadedCallback);
         //viewer.displayViewCube(true);
@@ -25,6 +26,13 @@ async function initViewer() {
         viewer.fitToView();
     };
     viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, geometryLoadedCallback);
+
+    // On each model load, set selection mode to LAST_OBJECT, i.e.,
+    // clicking on a geometry will always find and select the nearest
+    // ancestor that is an actual (composite) object
+    viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, function() {
+        viewer.setSelectionMode(Autodesk.Viewing.SelectionMode.LAST_OBJECT);
+    });
 }
 
 async function initSidebar(facility) {
@@ -34,38 +42,37 @@ async function initSidebar(facility) {
 
     // Prevent clicking inside the navigation dropdown from closing the dropdown
     $('#map').on('click', function(e) { e.stopPropagation(); });
-    $('#models').on('click', function(e) { e.stopPropagation(); });
 }
 
 async function initModelsTable(facility) {
     const resp = await fetch('/api/data/facilities/' + facility);
     const areas = await resp.json();
-    const types = new Set();
+    const systems = new Set();
     for (const areaKey in areas) {
         for (const prop of Object.getOwnPropertyNames(areas[areaKey])) {
-            types.add(prop);
+            systems.add(prop);
         }
     }
 
     // Create table header
     const $thead = $('<thead></thead>');
     const $row = $('<tr></tr>');
-    $row.append(`<th>Area</th>`);
+    $row.append(`<th>Area/System</th>`);
     for (const areaKey in areas) {
         $row.append(`<th class="model-area-select">${areaKey}</th>`);
     }
     $thead.append($row);
-    const $table = $('#models').empty().append($thead);
+    const $table = $('#models-table').empty().append($thead);
 
     // Create table content
     const $tbody = $(`<tbody></tbody>`);
-    for (const type of types.values()) {
+    for (const system of systems.values()) {
         const $row = $('<tr></tr>');
-        $row.append(`<th class="model-type-select">${type}</th>`);
+        $row.append(`<th class="model-system-select">${system}</th>`);
         for (const areaKey in areas) {
             const area = areas[areaKey];
-            if (area[type]) {
-                $row.append(`<td><input type="checkbox" value="${area[type]}" data-area="${areaKey}" data-type="${type}" /></td>`);
+            if (area[system]) {
+                $row.append(`<td><input type="checkbox" value="${area[system]}" data-area="${areaKey}" data-system="${system}" /></td>`);
             } else {
                 $row.append(`<td></td>`);
             }
@@ -75,7 +82,7 @@ async function initModelsTable(facility) {
     $table.append($tbody);
 
     // Setup event handlers
-    $('#models input').on('change', function() {
+    $('#models-table input').on('change', function() {
         const urn = this.value;
         if (this.checked) {
             addModel(urn);
@@ -83,9 +90,9 @@ async function initModelsTable(facility) {
             removeModel(urn);
         }
     });
-    $('#models .model-area-select').on('click', function() {
+    $('#models-table .model-area-select').on('click', function() {
         const area = $(this).text();
-        const checkboxes = Array.from($(`#models input[data-area="${area}"]`));
+        const checkboxes = Array.from($(`#models-table input[data-area="${area}"]`));
         if (checkboxes.filter(el => el.checked).length > 0) {
             for (const checkbox of checkboxes) {
                 checkbox.checked = false;
@@ -98,9 +105,9 @@ async function initModelsTable(facility) {
             }
         }
     });
-    $('#models .model-type-select').on('click', function() {
-        const type = $(this).text();
-        const checkboxes = Array.from($(`#models input[data-type="${type}"]`));
+    $('#models-table .model-system-select').on('click', function() {
+        const system = $(this).text();
+        const checkboxes = Array.from($(`#models-table input[data-system="${system}"]`));
         if (checkboxes.filter(el => el.checked).length > 0) {
             for (const checkbox of checkboxes) {
                 checkbox.checked = false;
@@ -116,7 +123,7 @@ async function initModelsTable(facility) {
 
     // By default, load all models for the first available area
     const area = Object.getOwnPropertyNames(areas)[0];
-    const checkboxes = Array.from($(`#models input[data-area="${area}"]`));
+    const checkboxes = Array.from($(`#models-table input[data-area="${area}"]`));
     for (const checkbox of checkboxes) {
         checkbox.checked = true;
         addModel(checkbox.value);
@@ -164,18 +171,28 @@ function initCharts(facility) {
     const $temperatureChart = $('#temperature-chart');
     const $pressureChart = $('#pressure-chart');
     $alert.show();
-    $temperatureChart.hide();
-    $pressureChart.hide();
+    $('#realtime > .show-based-on-selection').hide();
     NOP_VIEWER.addEventListener(Autodesk.Viewing.AGGREGATE_SELECTION_CHANGED_EVENT, function(ev) {
         const results = NOP_VIEWER.getAggregateSelection();
+        let show = false;
         if (results.length === 1 && results[0].selection.length === 1) {
+            const urn = results[0].model.getData().urn;
+            if (urnToSystem(urn) === 'equipment' || urnToSystem(urn) === 'piping') {
+                show = true;
+                const dbid = results[0].selection[0];
+                results[0].model.getProperties(dbid, function(result) {
+                    const equipNoProperty = result.properties.find(prop => prop.displayName === 'Equip No');
+                    $('#realtime > .equipment-number').text(equipNoProperty ? `Equip No: ${equipNoProperty.displayValue}` : '');
+                });
+            }
+        }
+
+        if (show) {
             $alert.hide();
-            $temperatureChart.show();
-            $pressureChart.show();
+            $('#realtime > .show-based-on-selection').show();
         } else {
             $alert.show();
-            $temperatureChart.hide();
-            $pressureChart.hide();
+            $('#realtime > .show-based-on-selection').hide();
         }
     });
 
@@ -360,9 +377,24 @@ function removeModel(urn) {
     }
 }
 
+const _urnSystemMap = new Map();
+function urnToSystem(urn) {
+    return _urnSystemMap.get(urn);
+}
+
 $(async function() {
-    await initViewer();
     const urlTokens = window.location.pathname.split('/');
     const facility = urlTokens[urlTokens.length - 1];
+    // Populate a map from model URNs to their corresponding systems
+    const resp = await fetch('/api/data/facilities/' + facility);
+    const areas = await resp.json();
+    for (const areaKey in areas) {
+        const area = areas[areaKey];
+        for (const system in area) {
+            _urnSystemMap.set(area[system], system.toLowerCase());
+        }
+    }
+
+    await initViewer(facility);
     initSidebar(facility);
 });
