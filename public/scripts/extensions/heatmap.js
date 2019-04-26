@@ -54,26 +54,49 @@ class HeatmapExtension extends Autodesk.Viewing.Extension {
         viewer.toolbar.addControl(this.toolbar);
     }
 
+    _getTemperature(id) {
+        // For now, mock temperature (from 0.0 to 100.0) data based on object ID
+        return (id % 1000) * 0.1;
+    }
+
+    _getPressure(id) {
+        // For now, mock pressure data (from 0.0 to 10.0) based on object ID
+        return (id % 100) * 0.1;
+    }
+
     _applyColors() {
         const viewer = this.viewer;
         const type = this._type;
         const intensity = this._intensity;
-        this._utils.enumerateNodes(function(id) {
-            const color = new THREE.Color();
-            switch (type) {
-                case 'Temperature':
-                    color.setHSL(Math.random() * 0.33, 1.0, 0.5);
-                    break;
-                case 'Pressure':
-                    color.setHSL(Math.random() * 0.33, 1.0, 0.5);
-                    break;
+        const models = this.viewer.getVisibleModels();
+        for (const model of models) {
+            const urn = model.getData().urn;
+            // Hack: only apply heatmaps to models with "equipment" or "piping" in their object IDs
+            const objectId = atob(urn).toLowerCase();
+            if (objectId.indexOf('equipment') !== -1 || objectId.indexOf('piping') !== -1) {
+                const tree = model.getData().instanceTree;
+                const _model = model;
+                tree.enumNodeChildren(tree.getRootId(), (id) => {
+                    const color = new THREE.Color();
+                    switch (type) {
+                        case 'Temperature':
+                            color.setHSL(this._getTemperature(id) / 100.0 * 0.33, 1.0, 0.5);
+                            break;
+                        case 'Pressure':
+                            color.setHSL(this._getPressure(id) / 10.0 * 0.33, 1.0, 0.5);
+                            break;
+                    }
+                    viewer.setThemingColor(id, new THREE.Vector4(color.r, color.g, color.b, intensity), _model);
+                }, true);
             }
-            viewer.setThemingColor(id, new THREE.Vector4(color.r, color.g, color.b, intensity));
-        });
+        }
     }
 
     _removeColors() {
-        this.viewer.clearThemingColors();
+        const models = this.viewer.getVisibleModels();
+        for (const model of models) {
+            this.viewer.clearThemingColors(model);
+        }
     }
 }
 
