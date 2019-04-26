@@ -171,8 +171,7 @@ function initCharts(facility) {
     const $temperatureChart = $('#temperature-chart');
     const $pressureChart = $('#pressure-chart');
     $alert.show();
-    $temperatureChart.hide();
-    $pressureChart.hide();
+    $('#realtime > .show-based-on-selection').hide();
     NOP_VIEWER.addEventListener(Autodesk.Viewing.AGGREGATE_SELECTION_CHANGED_EVENT, function(ev) {
         const results = NOP_VIEWER.getAggregateSelection();
         let show = false;
@@ -180,17 +179,20 @@ function initCharts(facility) {
             const urn = results[0].model.getData().urn;
             if (urnToSystem(urn) === 'equipment' || urnToSystem(urn) === 'piping') {
                 show = true;
+                const dbid = results[0].selection[0];
+                results[0].model.getProperties(dbid, function(result) {
+                    const equipNoProperty = result.properties.find(prop => prop.displayName === 'Equip No');
+                    $('#realtime > .equipment-number').text(equipNoProperty ? `Equip No: ${equipNoProperty.displayValue}` : '');
+                });
             }
         }
 
         if (show) {
             $alert.hide();
-            $temperatureChart.show();
-            $pressureChart.show();
+            $('#realtime > .show-based-on-selection').show();
         } else {
             $alert.show();
-            $temperatureChart.hide();
-            $pressureChart.hide();
+            $('#realtime > .show-based-on-selection').hide();
         }
     });
 

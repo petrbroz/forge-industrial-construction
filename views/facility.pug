@@ -33,10 +33,12 @@ head
         h5 Visibility
         table#models-table.table.table-sm
       #realtime.tab-pane.fade(role='tabpanel' aria-labelledby='realtime-tab')
-        h5 Temperature/Pressure
         div.alert.alert-secondary Select a single equipment or piping component
-        canvas#temperature-chart(width='100%')
-        canvas#pressure-chart(width='100%')
+        h5.equipment-number.show-based-on-selection
+        h6.show-based-on-selection Temperature
+        canvas#temperature-chart.show-based-on-selection(width='100%')
+        h6.show-based-on-selection Pressure
+        canvas#pressure-chart.show-based-on-selection(width='100%')
       #issues.tab-pane.fade(role='tabpanel' aria-labelledby='issues-tab')
         h5 Existing Issues
         table#issues-table.table.table-hover.table-sm
