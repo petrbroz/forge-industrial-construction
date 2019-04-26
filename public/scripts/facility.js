@@ -1,4 +1,4 @@
-async function initViewer() {
+async function initViewer(facility) {
     async function getAccessToken(callback) {
         const resp = await fetch('/api/auth/token');
         const json = await resp.json();
@@ -17,6 +17,7 @@ async function initViewer() {
     viewer.setLightPreset(1);
     viewer.setSelectionColor(new THREE.Color(0xEBB30B));
 
+    // On first model load, switch to orthohraphic camera and fit model to view
     const geometryLoadedCallback = () => {
         viewer.removeEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, geometryLoadedCallback);
         //viewer.displayViewCube(true);
@@ -25,6 +26,13 @@ async function initViewer() {
         viewer.fitToView();
     };
     viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, geometryLoadedCallback);
+
+    // On each model load, set selection mode to LAST_OBJECT, i.e.,
+    // clicking on a geometry will always find and select the nearest
+    // ancestor that is an actual (composite) object
+    viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, function() {
+        viewer.setSelectionMode(Autodesk.Viewing.SelectionMode.LAST_OBJECT);
+    });
 }
 
 async function initSidebar(facility) {
@@ -167,7 +175,15 @@ function initCharts(facility) {
     $pressureChart.hide();
     NOP_VIEWER.addEventListener(Autodesk.Viewing.AGGREGATE_SELECTION_CHANGED_EVENT, function(ev) {
         const results = NOP_VIEWER.getAggregateSelection();
+        let show = false;
         if (results.length === 1 && results[0].selection.length === 1) {
+            const urn = results[0].model.getData().urn;
+            if (urnToSystem(urn) === 'equipment' || urnToSystem(urn) === 'piping') {
+                show = true;
+            }
+        }
+
+        if (show) {
             $alert.hide();
             $temperatureChart.show();
             $pressureChart.show();
@@ -359,9 +375,24 @@ function removeModel(urn) {
     }
 }
 
+const _urnSystemMap = new Map();
+function urnToSystem(urn) {
+    return _urnSystemMap.get(urn);
+}
+
 $(async function() {
-    await initViewer();
     const urlTokens = window.location.pathname.split('/');
     const facility = urlTokens[urlTokens.length - 1];
+    // Populate a map from model URNs to their corresponding systems
+    const resp = await fetch('/api/data/facilities/' + facility);
+    const areas = await resp.json();
+    for (const areaKey in areas) {
+        const area = areas[areaKey];
+        for (const system in area) {
+            _urnSystemMap.set(area[system], system.toLowerCase());
+        }
+    }
+
+    await initViewer(facility);
     initSidebar(facility);
 });
