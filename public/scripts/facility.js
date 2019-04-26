@@ -34,7 +34,6 @@ async function initSidebar(facility) {
 
     // Prevent clicking inside the navigation dropdown from closing the dropdown
     $('#map').on('click', function(e) { e.stopPropagation(); });
-    $('#models').on('click', function(e) { e.stopPropagation(); });
 }
 
 async function initModelsTable(facility) {
@@ -55,7 +54,7 @@ async function initModelsTable(facility) {
         $row.append(`<th class="model-area-select">${areaKey}</th>`);
     }
     $thead.append($row);
-    const $table = $('#models').empty().append($thead);
+    const $table = $('#models-table').empty().append($thead);
 
     // Create table content
     const $tbody = $(`<tbody></tbody>`);
@@ -75,7 +74,7 @@ async function initModelsTable(facility) {
     $table.append($tbody);
 
     // Setup event handlers
-    $('#models input').on('change', function() {
+    $('#models-table input').on('change', function() {
         const urn = this.value;
         if (this.checked) {
             addModel(urn);
@@ -83,9 +82,9 @@ async function initModelsTable(facility) {
             removeModel(urn);
         }
     });
-    $('#models .model-area-select').on('click', function() {
+    $('#models-table .model-area-select').on('click', function() {
         const area = $(this).text();
-        const checkboxes = Array.from($(`#models input[data-area="${area}"]`));
+        const checkboxes = Array.from($(`#models-table input[data-area="${area}"]`));
         if (checkboxes.filter(el => el.checked).length > 0) {
             for (const checkbox of checkboxes) {
                 checkbox.checked = false;
@@ -98,9 +97,9 @@ async function initModelsTable(facility) {
             }
         }
     });
-    $('#models .model-system-select').on('click', function() {
+    $('#models-table .model-system-select').on('click', function() {
         const system = $(this).text();
-        const checkboxes = Array.from($(`#models input[data-system="${system}"]`));
+        const checkboxes = Array.from($(`#models-table input[data-system="${system}"]`));
         if (checkboxes.filter(el => el.checked).length > 0) {
             for (const checkbox of checkboxes) {
                 checkbox.checked = false;
@@ -116,7 +115,7 @@ async function initModelsTable(facility) {
 
     // By default, load all models for the first available area
     const area = Object.getOwnPropertyNames(areas)[0];
-    const checkboxes = Array.from($(`#models input[data-area="${area}"]`));
+    const checkboxes = Array.from($(`#models-table input[data-area="${area}"]`));
     for (const checkbox of checkboxes) {
         checkbox.checked = true;
         addModel(checkbox.value);

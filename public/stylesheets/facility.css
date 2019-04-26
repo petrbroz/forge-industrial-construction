@@ -52,15 +52,15 @@
     overflow-y: scroll;
 }
 
-#models {
+#models-table {
     margin: 0;
 }
 
-#models .model-area-select, #models .model-system-select {
+#models-table .model-area-select, #models-table .model-system-select {
     cursor: pointer;
 }
 
-#models .model-area-select:hover, #models .model-system-select:hover {
+#models-table .model-area-select:hover, #models-table .model-system-select:hover {
     font-weight: bold;
 }
 
