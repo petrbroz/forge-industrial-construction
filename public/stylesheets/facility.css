@@ -56,11 +56,11 @@
     margin: 0;
 }
 
-#models .model-area-select, #models .model-type-select {
+#models .model-area-select, #models .model-system-select {
     cursor: pointer;
 }
 
-#models .model-area-select:hover, #models .model-type-select:hover {
+#models .model-area-select:hover, #models .model-system-select:hover {
     font-weight: bold;
 }
 

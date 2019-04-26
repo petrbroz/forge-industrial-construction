@@ -40,17 +40,17 @@ async function initSidebar(facility) {
 async function initModelsTable(facility) {
     const resp = await fetch('/api/data/facilities/' + facility);
     const areas = await resp.json();
-    const types = new Set();
+    const systems = new Set();
     for (const areaKey in areas) {
         for (const prop of Object.getOwnPropertyNames(areas[areaKey])) {
-            types.add(prop);
+            systems.add(prop);
         }
     }
 
     // Create table header
     const $thead = $('<thead></thead>');
     const $row = $('<tr></tr>');
-    $row.append(`<th>Area</th>`);
+    $row.append(`<th>Area/System</th>`);
     for (const areaKey in areas) {
         $row.append(`<th class="model-area-select">${areaKey}</th>`);
     }
@@ -59,13 +59,13 @@ async function initModelsTable(facility) {
 
     // Create table content
     const $tbody = $(`<tbody></tbody>`);
-    for (const type of types.values()) {
+    for (const system of systems.values()) {
         const $row = $('<tr></tr>');
-        $row.append(`<th class="model-type-select">${type}</th>`);
+        $row.append(`<th class="model-system-select">${system}</th>`);
         for (const areaKey in areas) {
             const area = areas[areaKey];
-            if (area[type]) {
-                $row.append(`<td><input type="checkbox" value="${area[type]}" data-area="${areaKey}" data-type="${type}" /></td>`);
+            if (area[system]) {
+                $row.append(`<td><input type="checkbox" value="${area[system]}" data-area="${areaKey}" data-system="${system}" /></td>`);
             } else {
                 $row.append(`<td></td>`);
             }
@@ -98,9 +98,9 @@ async function initModelsTable(facility) {
             }
         }
     });
-    $('#models .model-type-select').on('click', function() {
-        const type = $(this).text();
-        const checkboxes = Array.from($(`#models input[data-type="${type}"]`));
+    $('#models .model-system-select').on('click', function() {
+        const system = $(this).text();
+        const checkboxes = Array.from($(`#models input[data-system="${system}"]`));
         if (checkboxes.filter(el => el.checked).length > 0) {
             for (const checkbox of checkboxes) {
                 checkbox.checked = false;
