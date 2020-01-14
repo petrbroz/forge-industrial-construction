@@ -40,6 +40,7 @@ class IssuesExtension extends Autodesk.Viewing.Extension {
 
     _createUI() {
         const viewer = this.viewer;
+        const refresh = this.refresh.bind(this);
 
         this.button = new Autodesk.Viewing.UI.Button('IssuesButton');
         this.button.onClick = () => {
@@ -49,9 +50,11 @@ class IssuesExtension extends Autodesk.Viewing.Extension {
                 const facility = urlTokens[urlTokens.length - 1];
                 this._createLabels(facility);
                 this.button.setState(0);
+                viewer.addEventListener(Autodesk.Viewing.OBJECT_TREE_CREATED_EVENT, refresh);
             } else {
                 this._removeLabels();
                 this.button.setState(1);
+                viewer.removeEventListener(Autodesk.Viewing.OBJECT_TREE_CREATED_EVENT, refresh);
             }
         };
         const icon = this.button.container.children[0];
@@ -121,11 +124,18 @@ class IssuesExtension extends Autodesk.Viewing.Extension {
             // Update reference to geometry fragment if not available
             if (!issue.fragment) {
                 const tree = model.getInstanceTree();
-                tree.enumNodeFragments(issue.partId, function(fragId) {
-                    if (!issue.fragment) {
-                        issue.fragment = viewer.impl.getFragmentProxy(model, fragId);
-                    }
-                });
+                if (tree) {
+                    tree.enumNodeFragments(issue.partId, function(fragId) {
+                        if (!issue.fragment) {
+                            issue.fragment = viewer.impl.getFragmentProxy(model, fragId);
+                        }
+                    });
+                }
+            }
+            // If there's still no geometry fragment to link to, skip this label
+            if (!issue.fragment) {
+                $label.css('display', 'none');
+                continue;
             }
             const pos = this.viewer.worldToClient(this._getIssuePosition(issue));
             $label.css('left', Math.floor(pos.x) + 10 /* arrow image width */ + 'px');
