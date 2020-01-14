@@ -29,6 +29,13 @@ class IssuesExtension extends Autodesk.Viewing.Extension {
 
     unload() {
         this.viewer.toolbar.removeControl(this.toolbar);
+        return true;
+    }
+
+    refresh() {
+        if (this._enabled) {
+            this._updateLabels();
+        }
     }
 
     _createUI() {
@@ -64,14 +71,21 @@ class IssuesExtension extends Autodesk.Viewing.Extension {
         this._issues = await response.json();
 
         const viewer = this.viewer;
-        const tree = viewer.model.getInstanceTree();
+        const models = viewer.getVisibleModels();
         for (const issue of this._issues) {
-            // Store first fragment of each issue's part
-            tree.enumNodeFragments(issue.partId, function(fragId) {
-                if (!issue.fragment) {
-                    issue.fragment = viewer.impl.getFragmentProxy(viewer.model, fragId);
-                }
-            });
+            let visible = false;
+            const model = models.find(m => m.myData.urn === issue.urn);
+            if (model) {
+                // Store first fragment of each issue's part
+                const tree = model.getInstanceTree();
+                tree.enumNodeFragments(issue.partId, function(fragId) {
+                    if (!issue.fragment) {
+                        issue.fragment = viewer.impl.getFragmentProxy(model, fragId);
+                    }
+                });
+                // Only show label if model is visible
+                visible = viewer.isNodeVisible(issue.partId, model);
+            }
 
             // Randomly assign placeholder image
             issue.img = 'https://placeimg.com/150/100/tech?' + issue._id
@@ -85,21 +99,38 @@ class IssuesExtension extends Autodesk.Viewing.Extension {
             `);
             $label.css('left', Math.floor(pos.x) + 10 /* arrow image width */ + 'px');
             $label.css('top', Math.floor(pos.y) + 10 /* arrow image height */ + 'px');
-            $label.css('display', viewer.isNodeVisible(issue.partId) ? 'block' : 'none');
+            $label.css('display', visible ? 'block' : 'none');
             $viewer.append($label);
         }
     }
 
     _updateLabels() {
         const viewer = this.viewer;
+        const models = viewer.getVisibleModels();
         for (const label of $('div.adsk-viewing-viewer label.markup')) {
             const $label = $(label);
             const id = $label.data('id');
             const issue = this._issues.find(item => item._id === id);
+            const model = models.find(m => m.myData.urn === issue.urn);
+            // Disable issue label if its model is no longer loaded
+            if (!model) {
+                issue.fragment = null;
+                $label.css('display', 'none');
+                continue;
+            }
+            // Update reference to geometry fragment if not available
+            if (!issue.fragment) {
+                const tree = model.getInstanceTree();
+                tree.enumNodeFragments(issue.partId, function(fragId) {
+                    if (!issue.fragment) {
+                        issue.fragment = viewer.impl.getFragmentProxy(model, fragId);
+                    }
+                });
+            }
             const pos = this.viewer.worldToClient(this._getIssuePosition(issue));
             $label.css('left', Math.floor(pos.x) + 10 /* arrow image width */ + 'px');
             $label.css('top', Math.floor(pos.y) + 10 /* arrow image height */ + 'px');
-            $label.css('display', viewer.isNodeVisible(issue.partId) ? 'block' : 'none');
+            $label.css('display', viewer.isNodeVisible(issue.partId, model) ? 'block' : 'none');
         }
     }
 

@@ -21,10 +21,18 @@ class HeatmapExtension extends Autodesk.Viewing.Extension {
 
     unload() {
         this.viewer.toolbar.removeControl(this.toolbar);
+        return true;
+    }
+
+    refresh() {
+        if (this._enabled) {
+            this._applyColors();
+        }
     }
 
     _createUI() {
         const viewer = this.viewer;
+        const refresh = this.refresh.bind(this);
 
         this.panel = new HeatmapPanel(viewer, viewer.container, (change) => {
             if (change.intensity) { this._intensity = change.intensity; }
@@ -40,9 +48,11 @@ class HeatmapExtension extends Autodesk.Viewing.Extension {
             if (this._enabled) {
                 this._applyColors();
                 this.button.setState(0);
+                viewer.addEventListener(Autodesk.Viewing.OBJECT_TREE_CREATED_EVENT, refresh);
             } else {
                 this._removeColors();
                 this.button.setState(1);
+                viewer.removeEventListener(Autodesk.Viewing.OBJECT_TREE_CREATED_EVENT, refresh);
             }
             viewer.impl.invalidate(true, true, true);
         };
@@ -75,6 +85,10 @@ class HeatmapExtension extends Autodesk.Viewing.Extension {
             const objectId = atob(urn).toLowerCase();
             if (objectId.indexOf('equipment') !== -1 || objectId.indexOf('piping') !== -1) {
                 const tree = model.getData().instanceTree;
+                if (!tree) {
+                    console.warn('Instance tree for model not yet available', model);
+                    continue;
+                }
                 const _model = model;
                 tree.enumNodeChildren(tree.getRootId(), (id) => {
                     const color = new THREE.Color();
