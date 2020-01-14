@@ -148,7 +148,6 @@ function initCharts(facility) {
             }
         }
     });
-
     const pressureChart = new Chart(document.getElementById('pressure-chart').getContext('2d'), {
         type: 'line',
         data: {
@@ -168,8 +167,6 @@ function initCharts(facility) {
     });
 
     const $alert =  $('#realtime div.alert');
-    const $temperatureChart = $('#temperature-chart');
-    const $pressureChart = $('#pressure-chart');
     $alert.show();
     $('#realtime > .show-based-on-selection').hide();
     NOP_VIEWER.addEventListener(Autodesk.Viewing.AGGREGATE_SELECTION_CHANGED_EVENT, function(ev) {
