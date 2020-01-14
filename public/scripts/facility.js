@@ -148,7 +148,6 @@ function initCharts(facility) {
             }
         }
     });
-
     const pressureChart = new Chart(document.getElementById('pressure-chart').getContext('2d'), {
         type: 'line',
         data: {
@@ -168,8 +167,6 @@ function initCharts(facility) {
     });
 
     const $alert =  $('#realtime div.alert');
-    const $temperatureChart = $('#temperature-chart');
-    const $pressureChart = $('#pressure-chart');
     $alert.show();
     $('#realtime > .show-based-on-selection').hide();
     NOP_VIEWER.addEventListener(Autodesk.Viewing.AGGREGATE_SELECTION_CHANGED_EVENT, function(ev) {
@@ -360,7 +357,10 @@ function addModel(urn) {
             'urn:' + urn,
             function(doc) {
                 const viewables = doc.getRoot().search({ type: 'geometry' });
-                NOP_VIEWER.loadModel(doc.getViewablePath(viewables[0]));
+                NOP_VIEWER.loadModel(doc.getViewablePath(viewables[0]), {}, function onSuccess() {
+                    NOP_VIEWER.getExtension('HeatmapExtension').refresh();
+                    NOP_VIEWER.getExtension('IssuesExtension').refresh();
+                });
             },
             function(err) {
                 console.error(err);
@@ -375,6 +375,8 @@ function removeModel(urn) {
     if (model) {
         NOP_VIEWER.impl.unloadModel(model);
     }
+    NOP_VIEWER.getExtension('HeatmapExtension').refresh();
+    NOP_VIEWER.getExtension('IssuesExtension').refresh();
 }
 
 const _urnSystemMap = new Map();
