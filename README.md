@@ -14,7 +14,7 @@ Autodesk Forge sample application demonstrating features relevant to the area of
 
 ## Live demo
 
-Master branch is deployed to https://forge-industrial-construction.herokuapp.com.
+Master branch is deployed to https://forge-industrial-construction.autodesk.io.
 
 ## Development
 
