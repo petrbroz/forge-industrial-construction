@@ -26,6 +26,21 @@ Master branch is deployed to https://forge-industrial-construction.autodesk.io.
   - for example, using the free tier of [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
   - or running MongoDB locally: https://docs.mongodb.com/manual/installation
 
+### Data preparation
+
+The demo requires a Navisworks model that is split by area and discipline,
+and individual NWD files in a Forge bucket to be named in the following format:
+
+`<facility>-<area>-<discipline>.nwd`
+
+Where _facility_ can be an arbitrary string, _area_ is a number, and _discipline_
+is an arbitrary string as well. An example of such filename would be:
+
+`austin-123-structural.nwd`
+
+> If you'd like to use a different naming of files or different extensions,
+> you can modify the parsing logic in https://github.com/petrbroz/forge-industrial-construction/blob/develop/routes/data.js#L64.
+
 ### Setup & Running
 
 - clone this repository
