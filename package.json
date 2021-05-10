@@ -16,8 +16,8 @@
   "dependencies": {
     "express": "^4.16.4",
     "forge-nodejs-utils": "^0.4.0",
+    "pug": "^3.0.1",
     "mongoose": "^5.7.5",
-    "pug": "^2.0.3",
     "validator": "^10.11.0"
   }
 }
