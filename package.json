@@ -14,7 +14,7 @@
   "author": "Petr Broz <petr.broz@autodesk.com>",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.16.4",
+    "express": "^4.18.2",
     "forge-nodejs-utils": "^0.4.0",
     "pug": "^3.0.1",
     "mongoose": "^5.7.5",
